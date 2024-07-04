@@ -7,8 +7,10 @@ public class Enemy : PoolableObject, IDamageable
     public AttackRadius AttackRadius;
     public EnemyMovement Movement;
     public NavMeshAgent Agent;
-    public EnemyScriptableObject EnemyScriptableObject;
-    public int Health = 100;
+    [SerializeField]
+    private EnemyScriptableObject EnemyScriptableObject;
+    [SerializeField]
+    private int Health = 100;
 
     private Coroutine LookCoroutine;
     private const string ATTACK_TRIGGER = "Attack";
