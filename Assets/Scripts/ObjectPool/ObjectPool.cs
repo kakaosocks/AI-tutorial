@@ -1,52 +1,90 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
+// A component for tracking the lifecycle of pooled objects
+public class PoolableObjectTracker : MonoBehaviour
+{
+    private PoolableObject trackedObject;
+    public event Action<PoolableObject> OnDisabled;
+
+    private void Awake()
+    {
+        trackedObject = GetComponent<PoolableObject>();
+    }
+
+    private void OnDisable()
+    {
+        OnDisabled?.Invoke(trackedObject);
+    }
+}
+
+// ObjectPool specifically for PoolableObject
 public class ObjectPool
 {
-    private PoolableObject Prefab;
-    private int Size;
-    private List<PoolableObject> AvailableObjectsPool;
+    private PoolableObject prefab;
+    private Stack<PoolableObject> spawnedObjects = new Stack<PoolableObject>(); // Stack for fast pushing and popping
 
-    private ObjectPool(PoolableObject Prefab, int Size)
+    public static ObjectPool CreateInstance(PoolableObject prefab, int initialSize)
     {
-        this.Prefab = Prefab;
-        this.Size = Size;
-        AvailableObjectsPool = new List<PoolableObject>(Size);
-    }
-
-    public static ObjectPool CreateInstance(PoolableObject Prefab, int Size)
-    {
-        ObjectPool pool = new ObjectPool(Prefab, Size);
-
-        GameObject poolGameObject = new GameObject(Prefab + " Pool");
-        pool.CreateObjects(poolGameObject);
-
-        return pool;
-    }
-
-    private void CreateObjects(GameObject parent)
-    {
-        for (int i = 0; i < Size; i++)
+        if (prefab == null)
         {
-            PoolableObject poolableObject = GameObject.Instantiate(Prefab, Vector3.zero, Quaternion.identity, parent.transform);
-            poolableObject.Parent = this;
-            poolableObject.gameObject.SetActive(false); // PoolableObject handles re-adding the object to the AvailableObjects
+            throw new ArgumentNullException(nameof(prefab), "Prefab cannot be null");
         }
+
+        ObjectPool pool = new ObjectPool
+        {
+            prefab = prefab
+        };
+        pool.AddNewObjectsToPool(initialSize);
+        return pool;
     }
 
     public PoolableObject GetObject()
     {
-        PoolableObject instance = AvailableObjectsPool[0];
+        if (spawnedObjects.Count == 0)
+        {
+            AddNewObjectsToPool(1);
+        }
 
-        AvailableObjectsPool.RemoveAt(0);
-
-        instance.gameObject.SetActive(true);
-
-        return instance;
+        PoolableObject pooledObject = spawnedObjects.Pop();
+        pooledObject.gameObject.SetActive(true);
+        return pooledObject;
     }
 
-    public void ReturnObjectToPool(PoolableObject Object)
+    private void AddNewObjectsToPool(int objectCount)
     {
-        AvailableObjectsPool.Add(Object);
+        for (int i = 0; i < objectCount; ++i)
+        {
+            PoolableObject pooledObject = UnityEngine.Object.Instantiate(prefab);
+            pooledObject.gameObject.SetActive(false);
+
+            // Assign the parent pool to the PoolableObject
+            pooledObject.Parent = this;
+
+            // Start tracking the object's lifecycle
+            PoolableObjectTracker tracker = pooledObject.gameObject.AddComponent<PoolableObjectTracker>();
+            tracker.OnDisabled += ReturnObjectToPool;
+            spawnedObjects.Push(pooledObject);
+        }
+    }
+
+    public void ReturnObjectToPool(PoolableObject pooledObject)
+    {
+        pooledObject.gameObject.SetActive(false);
+        spawnedObjects.Push(pooledObject);
+    }
+
+    private void OnDestroy()
+    {
+        // Detach from all trackers to avoid errors on scene deinitialization
+        foreach (var pooledObject in spawnedObjects)
+        {
+            PoolableObjectTracker tracker = pooledObject.GetComponent<PoolableObjectTracker>();
+            if (tracker != null)
+            {
+                tracker.OnDisabled -= ReturnObjectToPool;
+            }
+        }
     }
 }

@@ -66,6 +66,11 @@ PrefabInstance:
     m_RemovedComponents:
     - {fileID: 8969900873453152352, guid: 76aa53a27f62a2a45a7f50bda93a7ecb, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: 76aa53a27f62a2a45a7f50bda93a7ecb, type: 3}
+--- !u!135 &3640739152000429792 stripped
+SphereCollider:
+  m_CorrespondingSourceObject: {fileID: 3810446752478182268, guid: 76aa53a27f62a2a45a7f50bda93a7ecb, type: 3}
+  m_PrefabInstance: {fileID: 461599006847866268}
+  m_PrefabAsset: {fileID: 0}
 --- !u!195 &9078184295646607839 stripped
 NavMeshAgent:
   m_CorrespondingSourceObject: {fileID: 8906956080032820291, guid: 76aa53a27f62a2a45a7f50bda93a7ecb, type: 3}
@@ -88,7 +93,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 92fc1ec3e3631e446ab5cb125239f728, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Collider: {fileID: 0}
+  Collider: {fileID: 3640739152000429792}
   Damage: 10
   AttackDelay: 0.5
   Agent: {fileID: 9078184295646607839}

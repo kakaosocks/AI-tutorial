@@ -25,14 +25,12 @@ public class EnemySpawner : MonoBehaviour
     private void Start()
     {
         Triangulation = NavMesh.CalculateTriangulation();
-
         StartCoroutine(SpawnEnemies());
     }
 
     private IEnumerator SpawnEnemies()
     {
         WaitForSeconds Wait = new WaitForSeconds(SpawnDelay);
-
         int SpawnedEnemies = 0;
 
         while (SpawnedEnemies < NumberOfEnemiesToSpawn)
@@ -47,7 +45,6 @@ public class EnemySpawner : MonoBehaviour
             }
 
             SpawnedEnemies++;
-
             yield return Wait;
         }
     }
@@ -55,7 +52,6 @@ public class EnemySpawner : MonoBehaviour
     private void SpawnRoundRobinEnemy(int SpawnedEnemies)
     {
         int SpawnIndex = SpawnedEnemies % EnemyPrefabs.Count;
-
         DoSpawnEnemy(SpawnIndex);
     }
 
@@ -93,7 +89,6 @@ public class EnemySpawner : MonoBehaviour
             Debug.LogError($"Unable to fetch enemy of type {SpawnIndex} from object pool. Out of objects?");
         }
     }
-
 
     public enum SpawnMethod
     {

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.AI;
+using GenericObjectPool;
 
 public class RangedAttackRadius : AttackRadius
 {
@@ -8,7 +9,7 @@ public class RangedAttackRadius : AttackRadius
     public Bullet BulletPrefab;
     public Vector3 BulletSpawnOffset = new Vector3(0, 1, 0);
     public LayerMask Mask;
-    private ObjectPool BulletPool;
+    private GenericObjectPool<Bullet> BulletPool;
     [SerializeField]
     private float SpherecastRadius = 0.1f;
     private RaycastHit Hit;
@@ -19,7 +20,7 @@ public class RangedAttackRadius : AttackRadius
     {
         base.Awake();
 
-        BulletPool = ObjectPool.CreateInstance(BulletPrefab, Mathf.CeilToInt((1 / AttackDelay) * BulletPrefab.AutoDestroyTime));
+        BulletPool = GenericObjectPool<Bullet>.CreateInstance(BulletPrefab, Mathf.CeilToInt((1 / AttackDelay) * BulletPrefab.AutoDestroyTime));
     }
 
     protected override IEnumerator Attack()
@@ -43,10 +44,10 @@ public class RangedAttackRadius : AttackRadius
 
             if (targetDamageable != null)
             {
-                PoolableObject poolableObject = BulletPool.GetObject();
-                if (poolableObject != null)
+                Bullet poolableBullet = BulletPool.GetObject();
+                if (poolableBullet != null)
                 {
-                    bullet = poolableObject.GetComponent<Bullet>();
+                    bullet = poolableBullet.GetComponent<Bullet>();
 
                     bullet.Damage = Damage;
                     bullet.transform.position = transform.position + BulletSpawnOffset;
